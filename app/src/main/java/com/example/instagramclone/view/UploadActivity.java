@@ -3,6 +3,7 @@ package com.example.instagramclone.view;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -25,6 +26,8 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.UUID;
 
@@ -57,13 +60,23 @@ public class UploadActivity extends AppCompatActivity {
 
     public void uploadButtonClicked(View view) {
         UUID uuid = UUID.randomUUID();
-        String imageName = "images/" + uuid + ".png";
+        String imageName = "images/" + uuid + ".jpeg";
 
         if (imageData != null) {
             binding.uploadButton.setEnabled(false);
 
-            storageReference.child(imageName).putFile(imageData).addOnSuccessListener(taskSnapshot -> {
+            Bitmap bitmap;
+            try {
+                bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), imageData);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
 
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 75, baos);
+            byte[] imageBytes = baos.toByteArray();
+
+            storageReference.child(imageName).putBytes(imageBytes).addOnSuccessListener(taskSnapshot -> {
                 StorageReference newReference = firebaseStorage.getReference(imageName);
                 newReference.getDownloadUrl().addOnSuccessListener(uri -> {
                     String downloadUrl = uri.toString();
@@ -101,23 +114,6 @@ public class UploadActivity extends AppCompatActivity {
             });
         } else {
             Toast.makeText(UploadActivity.this, "Image cannot be empty!", Toast.LENGTH_LONG).show();
-
-            /*
-            String comment = binding.commentText.getText().toString();
-            FirebaseUser user = auth.getCurrentUser();
-            String email = user.getEmail();
-
-            HashMap<String, Object> postData = new HashMap<>();
-            postData.put("useremail", email);
-            postData.put("comment", comment);
-            postData.put("date", FieldValue.serverTimestamp());
-
-            firestore.collection("Posts").add(postData).addOnSuccessListener(documentReference -> {
-                Intent intent = new Intent(UploadActivity.this, FeedActivity.class);
-                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                startActivity(intent);
-            }).addOnFailureListener(e -> Toast.makeText(UploadActivity.this, e.getLocalizedMessage(), Toast.LENGTH_LONG).show());
-             */
         }
     }
 
