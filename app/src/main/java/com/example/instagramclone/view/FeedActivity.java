@@ -49,7 +49,7 @@ public class FeedActivity extends AppCompatActivity {
 
         getData();
 
-        postAdapter = new PostAdapter(posts);
+        postAdapter = new PostAdapter(this, posts);
 
         binding.recyclerView.setAdapter(postAdapter);
 
@@ -69,14 +69,19 @@ public class FeedActivity extends AppCompatActivity {
                         posts.clear();
 
                         for (DocumentSnapshot snapshot : value.getDocuments()) {
+                            String postId = snapshot.getId();
+
                             Map<String, Object> data = snapshot.getData();
                             String email = (String) data.get("useremail");
                             String comment = (String) data.get("comment");
                             String downloadUrl = (String) data.get("downloadurl");
 
                             Post post = new Post(email, comment, downloadUrl);
+                            post.setPostId(postId);
+
                             posts.add(post);
                         }
+
                         postAdapter.notifyDataSetChanged();
                     }
                 });
@@ -95,7 +100,6 @@ public class FeedActivity extends AppCompatActivity {
         if (item.getItemId() == R.id.add_post) {
             Intent uploadIntent = new Intent(FeedActivity.this, UploadActivity.class);
             startActivity(uploadIntent);
-
         } else if (item.getItemId() == R.id.signout) {
             auth.signOut();
 
