@@ -46,34 +46,39 @@ public class FeedActivity extends AppCompatActivity {
 
         binding.recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
+        getData();
+
         postAdapter = new PostAdapter(posts);
 
         binding.recyclerView.setAdapter(postAdapter);
-
-        getData();
 
     }
 
     @SuppressLint("NotifyDataSetChanged")
     private void getData() {
-        firestore.collection("Posts").orderBy("date", Query.Direction.DESCENDING).addSnapshotListener((value, error) -> {
-            if (error != null) {
-                Toast.makeText(FeedActivity.this, error.getLocalizedMessage(), Toast.LENGTH_LONG).show();
-            }
+        firestore.collection("Posts").orderBy("date", Query.Direction.DESCENDING)
+                .addSnapshotListener((value, error) -> {
+                    if (error != null) {
+                        Toast.makeText(FeedActivity.this, error.getLocalizedMessage(), Toast.LENGTH_LONG).show();
+                        return;
+                    }
 
-            if (value != null) {
-                for (DocumentSnapshot snapshot : value.getDocuments()) {
-                    Map<String, Object> data = snapshot.getData();
-                    String email = (String) data.get("useremail");
-                    String comment = (String) data.get("comment");
-                    String downloadUrl = (String) data.get("downloadurl");
+                    if (value != null) {
+                        posts.clear();
 
-                    Post post = new Post(email, comment, downloadUrl);
-                    posts.add(post);
-                }
-                postAdapter.notifyDataSetChanged();
-            }
-        });
+                        for (DocumentSnapshot snapshot : value.getDocuments()) {
+                            Map<String, Object> data = snapshot.getData();
+                            String email = (String) data.get("useremail");
+                            String comment = (String) data.get("comment");
+                            String downloadUrl = (String) data.get("downloadurl");
+
+                            Post post = new Post(email, comment, downloadUrl);
+                            posts.add(post);
+                        }
+
+                        postAdapter.notifyDataSetChanged();
+                    }
+                });
     }
 
     @Override
