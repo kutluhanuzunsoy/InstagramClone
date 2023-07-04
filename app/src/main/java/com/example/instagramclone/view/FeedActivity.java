@@ -20,6 +20,7 @@ import com.example.instagramclone.model.Post;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.Query;
 
 import java.util.ArrayList;
@@ -58,7 +59,8 @@ public class FeedActivity extends AppCompatActivity {
     private void getData() {
         firestore.collection("Posts").orderBy("date", Query.Direction.DESCENDING)
                 .addSnapshotListener((value, error) -> {
-                    if (error != null) {
+
+                    if (error != null && error.getCode() != FirebaseFirestoreException.Code.PERMISSION_DENIED) {
                         Toast.makeText(FeedActivity.this, error.getLocalizedMessage(), Toast.LENGTH_LONG).show();
                         return;
                     }
@@ -75,7 +77,6 @@ public class FeedActivity extends AppCompatActivity {
                             Post post = new Post(email, comment, downloadUrl);
                             posts.add(post);
                         }
-
                         postAdapter.notifyDataSetChanged();
                     }
                 });
