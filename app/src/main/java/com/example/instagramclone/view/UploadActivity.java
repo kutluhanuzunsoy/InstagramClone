@@ -60,7 +60,10 @@ public class UploadActivity extends AppCompatActivity {
         String imageName = "images/" + uuid + ".png";
 
         if (imageData != null) {
+            binding.uploadButton.setEnabled(false);
+
             storageReference.child(imageName).putFile(imageData).addOnSuccessListener(taskSnapshot -> {
+
                 StorageReference newReference = firebaseStorage.getReference(imageName);
                 newReference.getDownloadUrl().addOnSuccessListener(uri -> {
                     String downloadUrl = uri.toString();
@@ -75,14 +78,27 @@ public class UploadActivity extends AppCompatActivity {
                     postData.put("date", FieldValue.serverTimestamp());
 
                     firestore.collection("Posts").add(postData).addOnSuccessListener(documentReference -> {
+                        binding.uploadButton.setEnabled(true);
+
                         Intent intent = new Intent(UploadActivity.this, FeedActivity.class);
                         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                         startActivity(intent);
-                    }).addOnFailureListener(e -> Toast.makeText(UploadActivity.this, e.getLocalizedMessage(), Toast.LENGTH_LONG).show());
-                }).addOnFailureListener(e -> Toast.makeText(UploadActivity.this, e.getLocalizedMessage(), Toast.LENGTH_LONG).show());
 
-            }).addOnFailureListener(e -> Toast.makeText(UploadActivity.this, e.getLocalizedMessage(), Toast.LENGTH_LONG).show());
+                    }).addOnFailureListener(e -> {
+                        Toast.makeText(UploadActivity.this, e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
+                        binding.uploadButton.setEnabled(true);
 
+                    });
+                }).addOnFailureListener(e -> {
+                    Toast.makeText(UploadActivity.this, e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
+                    binding.uploadButton.setEnabled(true);
+
+                });
+            }).addOnFailureListener(e -> {
+                Toast.makeText(UploadActivity.this, e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
+                binding.uploadButton.setEnabled(true);
+
+            });
         } else {
             Toast.makeText(UploadActivity.this, "Image cannot be empty!", Toast.LENGTH_LONG).show();
 
