@@ -69,14 +69,15 @@ public class FeedActivity extends AppCompatActivity {
                         posts.clear();
 
                         for (DocumentSnapshot snapshot : value.getDocuments()) {
-                            String postId = snapshot.getId();
 
+                            String postId = snapshot.getId();
                             Map<String, Object> data = snapshot.getData();
                             String email = (String) data.get("useremail");
                             String comment = (String) data.get("comment");
                             String downloadUrl = (String) data.get("downloadurl");
+                            String date = (String) data.get("localdate");
 
-                            Post post = new Post(email, comment, downloadUrl);
+                            Post post = new Post(email, comment, downloadUrl, date);
                             post.setPostId(postId);
 
                             posts.add(post);

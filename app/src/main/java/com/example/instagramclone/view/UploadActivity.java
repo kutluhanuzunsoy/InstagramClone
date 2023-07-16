@@ -1,6 +1,7 @@
 package com.example.instagramclone.view;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -28,6 +29,8 @@ import com.google.firebase.storage.StorageReference;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.UUID;
 
@@ -83,12 +86,16 @@ public class UploadActivity extends AppCompatActivity {
                     String comment = binding.commentText.getText().toString();
                     FirebaseUser user = auth.getCurrentUser();
                     String email = user.getEmail();
+                    Calendar calendar = Calendar.getInstance();
+                    @SuppressLint("SimpleDateFormat") SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy - HH:mm");
+                    String dateTime = dateFormat.format(calendar.getTime());
 
                     HashMap<String, Object> postData = new HashMap<>();
                     postData.put("useremail", email);
                     postData.put("downloadurl", downloadUrl);
                     postData.put("comment", comment);
                     postData.put("date", FieldValue.serverTimestamp());
+                    postData.put("localdate", dateTime);
 
                     firestore.collection("Posts").add(postData).addOnSuccessListener(documentReference -> {
                         binding.uploadButton.setEnabled(true);
